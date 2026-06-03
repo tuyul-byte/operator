@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Operator - Daily Report System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: white;
+        }
+
+        .splash-logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .progress-bar {
+            width: 250px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            margin: 30px auto 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: white;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* Login Panel */
+        .login-container {
+            display: none;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .login-header h2 {
+            font-size: 28px;
+            color: #1e3c72;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .login-header.with-spacing {
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ccc, transparent);
+            margin: 25px 0 20px 0;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .info-login {
+            margin-top: 25px;
+            font-size: 12px;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .info-login p {
+            margin: 5px 0;
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+        }
+
+        .navbar {
+            background: #1e3c72;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background: #3498db;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #e74c3c;
+            border: none;
+            padding: 6px 15px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .main-content {
+            padding: 20px;
+            background: #f0f2f5;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* Data Container Styles */
+        .data-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .data-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+
+        .data-status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+
+        .data-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .data-status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .data-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .data-status.info {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .export-import-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .data-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .data-btn.export {
+            background: #3498db;
+        }
+
+        .data-btn.export:hover {
+            background: #2980b9;
+        }
+
+        .data-btn.import {
+            background: #e67e22;
+        }
+
+        .data-btn.import:hover {
+            background: #d35400;
+        }
+
+        .data-btn.wa {
+            background: #25D366;
+        }
+
+        .data-btn.wa:hover {
+            background: #128C7E;
+        }
+
+        .data-btn.disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .data-btn.disabled:hover {
+            transform: none;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Spreadsheet Styles */
+        .spreadsheet-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .spreadsheet-toolbar {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .toolbar-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .toolbar-btn.excel {
+            background: #27ae60;
+        }
+
+        .toolbar-btn.excel:hover {
+            background: #219a52;
+        }
+
+        .toolbar-btn.delete {
+            background: #e74c3c;
+        }
+
+        .toolbar-btn.delete:hover {
+            background: #c0392b;
+        }
+
+        .spreadsheet-wrapper {
+            overflow-x: auto;
+        }
+
+        .spreadsheet-table {
+            border-collapse: collapse;
+            min-width: 100%;
+            font-size: 13px;
+        }
+
+        .spreadsheet-table th, .spreadsheet-table td {
+            border: 1px solid #ddd;
+            padding: 4px 8px;
+            min-width: 100px;
+        }
+
+        .spreadsheet-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .number-cell {
+            text-align: right;
+            font-family: monospace;
+        }
+
+        /* 7 Kolom dengan lebar yang dipertahankan */
+        .spreadsheet-table th,
+        .spreadsheet-table td {
+            min-width: 70px;
+            padding: 4px 6px;
+        }
+
+        .spreadsheet-table th:nth-child(1),
+        .spreadsheet-table td:nth-child(1) {
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .spreadsheet-table th:nth-child(2),
+        .spreadsheet-table td:nth-child(2) {
+            min-width: 120px;
+        }
+
+        .spreadsheet-table th:nth-child(3),
+        .spreadsheet-table td:nth-child(3) {
+            min-width: 40px;
+        }
+
+        .spreadsheet-table th:nth-child(4),
+        .spreadsheet-table td:nth-child(4) {
+            min-width: 40px;
+        }
+
+        .spreadsheet-table th:nth-child(5),
+        .spreadsheet-table td:nth-child(5) {
+            min-width: 75px;
+        }
+
+        .spreadsheet-table th:nth-child(6),
+        .spreadsheet-table td:nth-child(6) {
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .spreadsheet-table th:nth-child(7),
+        .spreadsheet-table td:nth-child(7) {
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Highlight row yang siap export (durasi >= 8 jam) */
+        .row-ready-export {
+            background-color: #fff3cd !important;
+        }
+
+        .ready-badge {
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .exported-badge {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- SPLASH SCREEN -->
+<div class="splash-screen" id="splash">
+    <div class="splash-content">
+        <div class="splash-logo">📱</div>
+        <div class="splash-title">Daily Report System</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+</div>
+
+<!-- LOGIN PANEL -->
+<div class="login-container" id="loginPanel">
+    <div class="login-card">
+        <div class="login-header with-spacing">
+            <h2>Daily Report System</h2>
+            <p>Operator - Warehouse</p>
+            <p style="font-size: 16px; color: #888;">PT. TRPC Manufacturing Indonesia</p>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="input-group">
+            <label>👥 Pilih Operator</label>
+            <select id="loginUsername">
+                <option value="">-- Pilih Operator --</option>
+                <option value="darma">Darma</option>
+                <option value="nurhadi">Nurhadi</option>
+                <option value="athar">Athar</option>
+                <option value="purnomo">Purnomo</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label>🔐 Password</label>
+            <input type="password" id="loginPassword" placeholder="Masukkan password">
+        </div>
+        
+        <button class="login-btn" onclick="handleLogin()">Login →</button>
+        
+        <div class="error-msg" id="loginError"></div>
+        
+        <div class="info-login">
+            <p><strong>🔐 Informasi Login:</strong></p>
+            <p>Darma (Raw Material) : <strong>rmd123</strong></p>
+            <p>Nurhadi (Raw Material) : <strong>rmn123</strong></p>
+            <p>Athar (Finish Goods) : <strong>fg123</strong></p>
+            <p>Purnomo (Save Material) : <strong>sm123</strong></p>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-container" id="appContainer">
+    <div class="navbar">
+        <h2>📱 Daily Report System - Operator</h2>
+        <div class="user-info">
+            <span class="user-badge" id="userRoleBadge">Operator</span>
+            <span id="userNameDisplay">User</span>
+            <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+        </div>
+    </div>
+    <div class="main-content" id="mainContent"></div>
+</div>
+
+<script>
+    // ==================== DATA OPERATOR ====================
+    const operators = [
+        { username: 'darma', password: 'rmd123', name: 'Darma', divisi: 'Raw Material' },
+        { username: 'nurhadi', password: 'rmn123', name: 'Nurhadi', divisi: 'Raw Material' },
+        { username: 'athar', password: 'fg123', name: 'Athar', divisi: 'Finish Goods' },
+        { username: 'purnomo', password: 'sm123', name: 'Purnomo', divisi: 'Save Material' }
+    ];
+    
+    let reports = [];
+    let currentUser = null;
+    
+    // Cek apakah laporan memenuhi syarat untuk export (durasi >= 8 jam dan belum pernah diexport)
+    function isEligibleForExport(report) {
+        return parseFloat(report.totalJam) >= 8 && !report.exported;
+    }
+    
+    // Cek apakah ada laporan yang siap export
+    function hasReadyToExportReports() {
+        return reports.some(r => isEligibleForExport(r));
+    }
+    
+    // Load data dari local storage
+    function loadFromLocal() {
+        const key = `daily_report_operator_${currentUser?.username || 'temp'}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+            reports = JSON.parse(saved);
+        } else {
+            reports = [];
+        }
+    }
+    
+    function saveToLocal() {
+        if (currentUser) {
+            const key = `daily_report_operator_${currentUser.username}`;
+            localStorage.setItem(key, JSON.stringify(reports));
+        }
+    }
+    
+    function calculateTotalJam(mulai, selesai) {
+        if (!mulai || !selesai) return '0.0';
+        const start = new Date(`2000-01-01T${mulai}`);
+        const end = new Date(`2000-01-01T${selesai}`);
+        if (isNaN(start) || isNaN(end)) return '0.0';
+        const diff = (end - start) / (1000 * 60 * 60);
+        return diff > 0 ? diff.toFixed(1) : '0.0';
+    }
+    
+    // ==================== EXPORT/IMPORT FUNCTIONS ====================
+    
+    function exportOperatorData() {
+        if (reports.length === 0) {
+            alert('Belum ada data laporan untuk diexport!');
+            return null;
+        }
+        
+        // Export data yang durasinya >= 8 jam (tanpa harus status Done)
+        const dataToExport = reports.filter(r => parseFloat(r.totalJam) >= 8);
+        
+        if (dataToExport.length === 0) {
+            alert('Belum ada laporan dengan durasi minimal 8 jam!\n\nSilakan isi jam kerja Anda terlebih dahulu.\nContoh: Mulai 08:00, Selesai 16:00 = 8 jam');
+            return null;
+        }
+        
+        const exportData = {
+            type: 'DAILY_REPORT_DATA',
+            version: '1.0',
+            operator: currentUser.username,
+            operatorName: currentUser.name,
+            divisi: currentUser.divisi,
+            exportDate: new Date().toISOString(),
+            totalReports: dataToExport.length,
+            data: dataToExport.map(r => ({
+                id: r.id,
+                tanggal: r.tanggal,
+                aktivitas: r.aktivitas,
+                mulai: r.mulai,
+                selesai: r.selesai,
+                totalJam: r.totalJam,
+                status: r.status,
+                catatan: r.catatan || '',
+                exported: r.exported || false,
+                exportDate: r.exportDate || null
+            }))
+        };
+        
+        return JSON.stringify(exportData, null, 2);
+    }
+    
+    function downloadJSON(data, filename) {
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Tandai laporan sebagai sudah diexport
+    function markAsExported(reportIds) {
+        let markedCount = 0;
+        reportIds.forEach(id => {
+            const report = reports.find(r => r.id === id);
+            if (report && !report.exported && parseFloat(report.totalJam) >= 8) {
+                report.exported = true;
+                report.exportDate = new Date().toISOString();
+                markedCount++;
+            }
+        });
+        if (markedCount > 0) {
+            saveToLocal();
+        }
+        return markedCount;
+    }
+    
+    function exportToFile() {
+        if (!hasReadyToExportReports()) {
+            alert('⚠️ Belum ada laporan dengan durasi minimal 8 jam!');
+            return;
+        }
+        
+        const jsonData = exportOperatorData();
+        if (jsonData) {
+            const readyReports = reports.filter(r => parseFloat(r.totalJam) >= 8 && !r.exported);
+            const filename = `daily_report_${currentUser.username}_${new Date().toISOString().split('T')[0]}.json`;
+            downloadJSON(jsonData, filename);
+            
+            // Tandai laporan yang sudah diexport
+            const exportedIds = readyReports.map(r => r.id);
+            const markedCount = markAsExported(exportedIds);
+            
+            alert(`✅ Data berhasil diexport!\n📊 Jumlah laporan: ${readyReports.length}\n✅ ${markedCount} laporan ditandai sudah dikirim.`);
+            renderOperatorPanel();
+        }
+    }
+    
+    function exportToWA() {
+        if (!hasReadyToExportReports()) {
+            alert('⚠️ Belum ada laporan dengan durasi minimal 8 jam!');
+            return;
+        }
+        
+        const jsonData = exportOperatorData();
+        if (jsonData) {
+            const readyReports = reports.filter(r => parseFloat(r.totalJam) >= 8 && !r.exported);
+            
+            // Ringkasan data untuk WhatsApp
+            const summary = readyReports.map(r => 
+                `📅 ${r.tanggal} | ${r.aktivitas.substring(0,35)} | ${r.totalJam} jam | Status: ${r.status}`
+            ).join('\n');
+            
+            const message = `📋 *LAPORAN HARIAN - ${currentUser.name} (${currentUser.divisi})*\n\n` +
+                           `✅ *Laporan Siap Kirim: ${readyReports.length}*\n` +
+                           `📊 *Total Laporan: ${reports.length}*\n` +
+                           `📅 *Tanggal Export:* ${new Date().toLocaleString('id')}\n\n` +
+                           `*DETAIL LAPORAN (Durasi ≥ 8 jam):*\n${summary}\n\n` +
+                           `*CARA IMPORT KE ADMIN:*\n` +
+                           `1. Simpan file JSON yang akan dikirim\n` +
+                           `2. Buka Aplikasi Admin\n` +
+                           `3. Klik "Import Data JSON"\n` +
+                           `4. Pilih file JSON ini\n\n` +
+                           `_📎 File JSON akan dikirim setelah pesan ini._`;
+            
+            // Buka WhatsApp
+            const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(waUrl, '_blank');
+            
+            // Tawarkan download file
+            setTimeout(() => {
+                if (confirm('Apakah Anda ingin menyimpan file JSON untuk dikirim via WhatsApp?')) {
+                    const filename = `daily_report_${currentUser.username}_${new Date().toISOString().split('T')[0]}.json`;
+                    downloadJSON(jsonData, filename);
+                    
+                    // Tandai laporan yang sudah diexport
+                    const exportedIds = readyReports.map(r => r.id);
+                    const markedCount = markAsExported(exportedIds);
+                    
+                    alert(`✅ File JSON siap! Silakan kirim file tersebut via WhatsApp.\n✅ ${markedCount} laporan ditandai sudah dikirim.`);
+                    renderOperatorPanel();
+                }
+            }, 500);
+        }
+    }
+    
+    function importFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (importedData.type === 'DAILY_REPORT_DATA') {
+                    if (confirm(`Import data dari ${importedData.operatorName} (${importedData.divisi})?\nJumlah data: ${importedData.totalReports || importedData.data.length} laporan\n\nData akan DITAMBAHKAN ke data Anda yang sudah ada.`)) {
+                        
+                        let importedCount = 0;
+                        let duplicateCount = 0;
+                        
+                        importedData.data.forEach(importedReport => {
+                            // Cek duplikat berdasarkan id
+                            const exists = reports.some(r => r.id === importedReport.id);
+                            
+                            if (!exists) {
+                                reports.push({
+                                    ...importedReport,
+                                    operator: currentUser.username,
+                                    operatorName: currentUser.name,
+                                    divisi: currentUser.divisi,
+                                    exported: false // Reset exported status untuk data import
+                                });
+                                importedCount++;
+                            } else {
+                                duplicateCount++;
+                            }
+                        });
+                        
+                        saveToLocal();
+                        alert(`✅ Import selesai!\n📥 Data baru: ${importedCount}\n🔄 Data duplikat (diabaikan): ${duplicateCount}\n📊 Total data sekarang: ${reports.length}`);
+                        
+                        renderOperatorPanel();
+                    }
+                } else {
+                    alert('❌ Format file tidak valid! Bukan file laporan daily report.');
+                }
+            } catch (error) {
+                alert('❌ Gagal membaca file! Pastikan file adalah JSON yang valid.');
+                console.error(error);
+            }
+        };
+        reader.readAsText(file);
+        
+        // Reset input file
+        event.target.value = '';
+    }
+    
+    function triggerImport() {
+        document.getElementById('importFileInput').click();
+    }
+    
+    // ==================== EXPORT EXCEL ====================
+    function exportToExcel() {
+        if (reports.length === 0) {
+            alert('Belum ada data laporan!');
+            return;
+        }
+        
+        const exportData = reports.map(r => ({
+            'Tanggal': r.tanggal,
+            'Aktivitas': r.aktivitas,
+            'Jam Mulai': r.mulai,
+            'Jam Selesai': r.selesai,
+            'Total Jam': r.totalJam,
+            'Status': r.status,
+            'Catatan': r.catatan || '',
+            'Status Kirim': r.exported ? 'Sudah Dikirim' : (parseFloat(r.totalJam) >= 8 ? 'Siap Kirim' : 'Belum Siap')
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, `Daily Report ${currentUser.name}`);
+        
+        const colWidths = [{wch:12}, {wch:50}, {wch:10}, {wch:10}, {wch:10}, {wch:12}, {wch:40}, {wch:15}];
+        ws['!cols'] = colWidths;
+        
+        XLSX.writeFile(wb, `daily_report_${currentUser.username}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+    
+    // ==================== OPERATOR PANEL ====================
+    function renderOperatorPanel() {
+        const exportedReports = reports.filter(r => r.exported === true);
+        const readyReports = reports.filter(r => parseFloat(r.totalJam) >= 8 && !r.exported);
+        const hasReady = readyReports.length > 0;
+        
+        // Tampilkan tombol export/WA hanya jika ada laporan yang siap export (durasi >= 8 jam)
+        let exportHtml = `
+            <div class="data-container">
+                <div class="data-title">📤 Export / Kirim Data ke Admin</div>
+                <div class="data-status ${hasReady ? 'success' : 'warning'}">
+                    ${hasReady ? 
+                        `✅ <strong>${readyReports.length} laporan SIAP DIKIRIM!</strong><br>Durasi total jam ≥ 8 jam` : 
+                        '⚠️ <strong>Belum ada laporan yang siap dikirim</strong><br>Isi jam kerja minimal 8 jam'}
+                    <br><small style="font-size:12px;">Total laporan: ${reports.length} | Sudah dikirim: ${exportedReports.length}</small>
+                </div>
+                <div class="export-import-buttons">
+                    <button class="data-btn export ${!hasReady ? 'disabled' : ''}" 
+                            onclick="${hasReady ? 'exportToFile()' : 'alert(\'⚠️ Belum ada laporan dengan durasi minimal 8 jam!\\n\\nSilakan isi jam kerja Anda terlebih dahulu.\')'}"
+                            ${!hasReady ? 'disabled' : ''}>
+                        📥 Export ke File JSON
+                    </button>
+                    <button class="data-btn wa ${!hasReady ? 'disabled' : ''}" 
+                            onclick="${hasReady ? 'exportToWA()' : 'alert(\'⚠️ Belum ada laporan dengan durasi minimal 8 jam!\\n\\nSilakan isi jam kerja Anda terlebih dahulu.\')'}"
+                            ${!hasReady ? 'disabled' : ''}>
+                        💬 Kirim via WhatsApp
+                    </button>
+                    <button class="data-btn import" onclick="triggerImport()">📂 Import Data JSON</button>
+                    <button class="data-btn" onclick="exportToExcel()" style="background:#27ae60;">📎 Export Excel</button>
+                </div>
+                <input type="file" id="importFileInput" class="file-input" accept=".json" onchange="importFromFile(event)">
+            </div>
+        `;
+        
+        if (exportedReports.length > 0) {
+            exportHtml += `
+                <div class="data-container">
+                    <div class="data-title">✅ Riwayat Pengiriman Data</div>
+                    ${exportedReports.map(r => `
+                        <div class="data-status info" style="margin:5px 0; text-align:left;">
+                            📅 ${r.tanggal} - ${r.aktivitas.substring(0,40)} (${r.totalJam} jam) - ${r.status === 'Done' ? '✓ Selesai' : (r.status === 'Progress' ? '🔄 Progress' : '⏳ Pending')}
+                            ${r.exportDate ? `<br><small>📤 Dikirim: ${new Date(r.exportDate).toLocaleString('id')}</small>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        // Tampilkan daftar laporan yang siap kirim (durasi >= 8 jam)
+        if (readyReports.length > 0) {
+            exportHtml += `
+                <div class="data-container" style="background:#fff3cd; border:2px solid #e67e22;">
+                    <div class="data-title" style="color:#856404;">🎯 Laporan Siap Dikirim ke Admin</div>
+                    <div class="data-status warning">
+                        Berikut laporan dengan durasi ≥ 8 jam (siap dikirim):
+                    </div>
+                    ${readyReports.map(r => `
+                        <div class="data-status warning" style="margin:8px 0; text-align:left; background:#ffeaa7;">
+                            <strong>📅 ${r.tanggal}</strong><br>
+                            📝 ${r.aktivitas}<br>
+                            ⏰ ${r.mulai} - ${r.selesai} (${r.totalJam} jam)<br>
+                            🏷️ Status: ${r.status === 'Done' ? '✅ Selesai' : (r.status === 'Progress' ? '🔄 Progress' : '⏳ Pending')}<br>
+                            <span class="ready-badge">✓ Siap Kirim</span>
+                            <button onclick="markAsExportedManually(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 12px; border-radius:4px; margin-top:5px; cursor:pointer;">✅ Tandai Sudah Dikirim</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        let tableHtml = `
+            <div class="spreadsheet-card">
+                <div class="spreadsheet-toolbar">
+                    <button class="toolbar-btn" onclick="addRow()">➕ Tambah Baris</button>
+                    <button class="toolbar-btn delete" onclick="clearAllRows()">🗑️ Hapus Semua</button>
+                </div>
+                <div class="spreadsheet-wrapper">
+                    <table class="spreadsheet-table">
+                        <thead>
+                            <tr><th>Tanggal</th><th>Aktivitas</th><th>Mulai</th><th>Selesai</th><th>Total Jam</th><th>Status</th><th>Catatan</th><th>Status Kirim</th><th>Aksi</th></tr>
+                        </thead>
+                        <tbody>
+                            ${reports.map(r => {
+                                const isReady = parseFloat(r.totalJam) >= 8 && !r.exported;
+                                return `
+                                    <tr ${isReady ? 'class="row-ready-export"' : ''}>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'tanggal', this.textContent)">${r.tanggal}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'aktivitas', this.textContent)">${r.aktivitas || ''}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'mulai', this.textContent); updateTotalJam(${r.id})">${r.mulai || ''}</td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'selesai', this.textContent); updateTotalJam(${r.id})">${r.selesai || ''}</td>
+                                        <td class="number-cell">${r.totalJam || '0.0'} jam</td>
+                                        <td>
+                                            <select onchange="updateField(${r.id}, 'status', this.value)" 
+                                                    style="padding: 4px 8px; border-radius: 4px; border: 1px solid #ddd;
+                                                           ${r.status === 'Done' ? 'background: #d4edda; color: #155724;' : 
+                                                             r.status === 'Progress' ? 'background: #fff3cd; color: #856404;' : 
+                                                             'background: #f8d7da; color: #721c24;'}">
+                                                <option value="Pending" ${r.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                                <option value="Progress" ${r.status === 'Progress' ? 'selected' : ''}>Progress</option>
+                                                <option value="Done" ${r.status === 'Done' ? 'selected' : ''}>Done</option>
+                                            </select>
+                                        </td>
+                                        <td contenteditable="true" onblur="updateField(${r.id}, 'catatan', this.textContent)">${r.catatan || ''}</td>
+                                        <td>${r.exported ? '<span class="exported-badge">✅ Sudah Dikirim</span>' : (parseFloat(r.totalJam) >= 8 ? '<span class="ready-badge">📱 Siap Kirim</span>' : '⏳ Belum')}</td>
+                                        <td style="white-space: nowrap;">
+                                            <button onclick="clearRow(${r.id})" style="background:#e67e22; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; margin-right:4px; font-size:11px;">🗑️ Kosongkan</button>
+                                            <button onclick="deleteRow(${r.id})" style="background:#e74c3c; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:11px;">❌ Hapus</button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                            ${reports.length === 0 ? '<tr><td colspan="9" style="text-align:center;">Belum ada data. Klik "Tambah Baris" untuk memulai</td></tr>' : ''}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('mainContent').innerHTML = exportHtml + tableHtml;
+    }
+    
+    // ==================== CRUD FUNCTIONS ====================
+    window.updateField = function(id, field, value) {
+        const report = reports.find(r => r.id === id);
+        if (report) {
+            report[field] = value;
+            if (field === 'mulai' || field === 'selesai') {
+                report.totalJam = calculateTotalJam(report.mulai, report.selesai);
+                // Jika total jam berubah kurang dari 8, reset exported status
+                if (parseFloat(report.totalJam) < 8) {
+                    report.exported = false;
+                }
+            }
+            saveToLocal();
+            renderOperatorPanel();
+        }
+    };
+    
+    window.updateTotalJam = function(id) {
+        const report = reports.find(r => r.id === id);
+        if (report) {
+            const oldTotal = report.totalJam;
+            report.totalJam = calculateTotalJam(report.mulai, report.selesai);
+            // Jika total jam berubah kurang dari 8, reset exported status
+            if (parseFloat(report.totalJam) < 8 && oldTotal !== report.totalJam) {
+                report.exported = false;
+            }
+            saveToLocal();
+            renderOperatorPanel();
+        }
+    };
+    
+    window.addRow = function() {
+        const newId = reports.length > 0 ? Math.max(...reports.map(r => r.id), 0) + 1 : 1;
+        const newRow = {
+            id: newId,
+            operator: currentUser.username,
+            operatorName: currentUser.name,
+            divisi: currentUser.divisi,
+            tanggal: (() => {
+                const d = new Date();
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+            })(),
+            aktivitas: '',
+            mulai: '',
+            selesai: '',
+            status: 'Pending',
+            catatan: '',
+            totalJam: '0.0',
+            exported: false,
+            createdAt: new Date().toISOString()
+        };
+        reports.push(newRow);
+        saveToLocal();
+        renderOperatorPanel();
+    };
+    
+    window.clearRow = function(rowId) {
+        const report = reports.find(r => r.id === rowId);
+        if (report && confirm(`Kosongkan semua kolom pada baris ini?`)) {
+            report.aktivitas = '';
+            report.mulai = '';
+            report.selesai = '';
+            report.catatan = '';
+            report.totalJam = '0.0';
+            report.status = 'Pending';
+            report.exported = false;
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Isi baris telah dikosongkan');
+        }
+    };
+    
+    window.deleteRow = function(rowId) {
+        if (confirm(`Yakin ingin menghapus baris ini secara permanen?`)) {
+            reports = reports.filter(r => r.id !== rowId);
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Baris telah dihapus');
+        }
+    };
+    
+    window.clearAllRows = function() {
+        if (confirm('PERINGATAN: Ini akan menghapus SEMUA data laporan Anda! Lanjutkan?')) {
+            reports = [];
+            saveToLocal();
+            renderOperatorPanel();
+            alert('Semua baris telah dihapus');
+        }
+    };
+    
+    // Tandai laporan sudah dikirim secara manual
+    window.markAsExportedManually = function(id) {
+        const report = reports.find(r => r.id === id);
+        if (report && !report.exported && parseFloat(report.totalJam) >= 8) {
+            report.exported = true;
+            report.exportDate = new Date().toISOString();
+            saveToLocal();
+            alert(`✅ Laporan tanggal ${report.tanggal} telah ditandai sudah dikirim!`);
+            renderOperatorPanel();
+        } else {
+            alert('❌ Laporan belum memenuhi syarat untuk dikirim (minimal 8 jam)');
+        }
+    };
+    
+    // ==================== LOGIN ====================
+    function handleLogin() {
+        const selectedValue = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!selectedValue) {
+            document.getElementById('loginError').textContent = 'Pilih operator!';
+            return;
+        }
+        
+        const operator = operators.find(op => op.username === selectedValue);
+        if (operator && operator.password === password) {
+            currentUser = { username: operator.username, name: operator.name, role: 'operator', divisi: operator.divisi };
+            loadFromLocal();
+            showMainApp();
+        } else {
+            document.getElementById('loginError').textContent = 'Password salah!';
+        }
+    }
+    
+    function showMainApp() {
+        document.getElementById('loginPanel').style.display = 'none';
+        document.getElementById('appContainer').style.display = 'block';
+        document.getElementById('userRoleBadge').textContent = '👤 Operator';
+        document.getElementById('userNameDisplay').textContent = `${currentUser.name} (${currentUser.divisi})`;
+        renderOperatorPanel();
+    }
+    
+    function logout() {
+        currentUser = null;
+        reports = [];
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginPanel').style.display = 'flex';
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginError').textContent = '';
+    }
+    
+    // Splash screen
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += 20;
+        document.getElementById('progressFill').style.width = progress + '%';
+        if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+                document.getElementById('splash').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash').style.display = 'none';
+                    document.getElementById('loginPanel').style.display = 'flex';
+                }, 500);
+            }, 300);
+        }
+    }, 200);
+    
+    // Expose functions globally
+    window.exportToFile = exportToFile;
+    window.exportToWA = exportToWA;
+    window.triggerImport = triggerImport;
+    window.importFromFile = importFromFile;
+    window.exportToExcel = exportToExcel;
+    window.markAsExportedManually = markAsExportedManually;
+</script>
+</body>
+</html>
